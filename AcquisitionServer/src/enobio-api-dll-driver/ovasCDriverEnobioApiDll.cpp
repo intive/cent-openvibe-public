@@ -12,6 +12,9 @@ using namespace OpenViBEAcquisitionServer;
 
 namespace
 {
+	// Size of the internal buffer
+	const OpenViBE::uint32 BUFFER_SCALE_FACTOR = 3;
+
 	//TODO: shouldn't it be pulled from EnobioApi.dll dynamically
 	const OpenViBE::uint32 FREQUENCY_RATE = 250u;
 
@@ -86,11 +89,14 @@ private:
 	// Buffer for samples
 	SamplesBuffer m_aSamplesBuffer;
 
-	// Buffer for reader, we swap internals to make if faster
+	// Buffer for reader, we copy samples buffer there
 	SamplesBuffer m_aReaderBuffer;
 
 	// Maximum number of samples
 	OpenViBE::uint32 m_ui32MaxSamplesCount;
+
+	// Timemark for debug purpose
+	OpenViBE::uint32 m_ui32TimeMark;
 
 	// Mutex to protect samples
 	boost::mutex m_oSamplesMutex;
@@ -228,6 +234,7 @@ CDriverEnobioApiDll::CDriverEnobioApiDllPrivate::CDriverEnobioApiDllPrivate(Open
 	, m_rDriverContext(rDriverContext)
 	, m_uiSamplesCount(0)
 	, m_ui32MaxSamplesCount(0)
+	, m_ui32TimeMark(0)
 {
 	// Configure channels for driver
 	m_oEnobio.setProperty(Property(Enobio::STR_PROPERTY_ENABLE_CHANNEL_1, EnobioData::NUMBER_OF_CHANNELS > 0));
@@ -255,6 +262,7 @@ OpenViBE::boolean CDriverEnobioApiDll::CDriverEnobioApiDllPrivate::open()
 		return false;
 	}
 
+	m_ui32TimeMark = System::Time::getTime();
 	m_oEnobio.startStreaming();
 
 	return true;
@@ -277,23 +285,28 @@ void CDriverEnobioApiDll::CDriverEnobioApiDllPrivate::receiveData(const EnobioDa
 	boost::mutex::scoped_lock lock(m_oSamplesMutex);
 
 	// If there is a space in the buffer, add new data
-	if (m_uiSamplesCount < m_ui32MaxSamplesCount)
+	if (m_uiSamplesCount + 1< m_aSamplesBuffer.size() / EnobioData::NUMBER_OF_CHANNELS)
 	{
 		OpenViBE::int32 l_i32Value = 0;
+		OpenViBE::float32 l_f32Previous = 0.0f;
+
 		// Copy data to buffer
 		for (OpenViBE::uint32 i = 0; i < EnobioData::NUMBER_OF_CHANNELS; ++i)
 		{
 			l_i32Value = rData.getDataFromChannel(0/* number does not start with 1, error in API*/ + i);
-			m_aSamplesBuffer[m_uiSamplesCount + i * m_ui32MaxSamplesCount] = OpenViBE::float32(l_i32Value);
+
+			if (m_uiSamplesCount > 0)
+			{
+				l_f32Previous = m_aSamplesBuffer[m_uiSamplesCount - 1 + i * m_ui32MaxSamplesCount];
+			}
+			m_aSamplesBuffer[m_uiSamplesCount  + i * m_ui32MaxSamplesCount] = (OpenViBE::float32(l_i32Value) + l_f32Previous) / 2;
+			m_aSamplesBuffer[m_uiSamplesCount + 1 + i * m_ui32MaxSamplesCount] = OpenViBE::float32(l_i32Value);
 		}
-/*
-		m_rDriverContext.getLogManager() << OpenViBE::Kernel::LogLevel_Info << "C 1 2 3 4 = " << 
-			rData.getChannel1() << " " <<
-			rData.getChannel2() << " " <<
-			rData.getChannel3() << " " <<
-			rData.getChannel4() << "\n";
-*/
-		++m_uiSamplesCount;
+		m_uiSamplesCount += 2;
+	}
+	else
+	{
+		m_rDriverContext.getLogManager() << OpenViBE::Kernel::LogLevel_Warning << "Too many data, skipping\n";
 	}
 }
 
@@ -312,7 +325,7 @@ void CDriverEnobioApiDll::CDriverEnobioApiDllPrivate::setMaxSampleCount(OpenViBE
 	// Clear buffer and resize it to new value
 	m_uiSamplesCount = 0;
 	m_aSamplesBuffer.clear();
-	m_aSamplesBuffer.resize(m_ui32MaxSamplesCount * EnobioData::NUMBER_OF_CHANNELS);
+	m_aSamplesBuffer.resize(m_ui32MaxSamplesCount * EnobioData::NUMBER_OF_CHANNELS * BUFFER_SCALE_FACTOR);
 	m_aReaderBuffer.resize(m_ui32MaxSamplesCount * EnobioData::NUMBER_OF_CHANNELS);
 }
 
@@ -320,10 +333,18 @@ const SamplesBuffer* CDriverEnobioApiDll::CDriverEnobioApiDllPrivate::getSamples
 {
 	boost::mutex::scoped_lock lock(m_oSamplesMutex);
 
-	if (m_uiSamplesCount == m_ui32MaxSamplesCount)
+	if (m_uiSamplesCount >= m_ui32MaxSamplesCount)
 	{
-		m_aSamplesBuffer.swap(m_aReaderBuffer);
-		m_uiSamplesCount = 0;
+#if 0
+		OpenViBE::uint32 ui32Mark = System::Time::getTime();
+		m_rDriverContext.getLogManager() << OpenViBE::Kernel::LogLevel_Info << 
+			"Got " << m_ui32MaxSamplesCount << " after " << (ui32Mark - m_ui32TimeMark) << "ms\n";
+		m_ui32TimeMark = ui32Mark;
+#endif
+		const OpenViBE::uint32 ui32ItemsToCopy = m_ui32MaxSamplesCount * EnobioData::NUMBER_OF_CHANNELS;
+		std::copy(m_aSamplesBuffer.begin(), m_aSamplesBuffer.begin() + ui32ItemsToCopy, m_aReaderBuffer.begin());
+		std::copy(m_aSamplesBuffer.begin() + ui32ItemsToCopy, m_aSamplesBuffer.end(), m_aSamplesBuffer.begin());
+		m_uiSamplesCount -= m_ui32MaxSamplesCount;
 		return &m_aReaderBuffer;
 	}
 
