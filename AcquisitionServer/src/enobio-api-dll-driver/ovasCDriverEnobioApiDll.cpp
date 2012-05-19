@@ -290,6 +290,9 @@ void CDriverEnobioApiDll::CDriverEnobioApiDllPrivate::receiveData(const EnobioDa
 		OpenViBE::int32 l_i32Value = 0;
 		OpenViBE::float32 l_f32Previous = 0.0f;
 
+		OpenViBE::uint32 l_loopRound = m_uiSamplesCount / m_ui32MaxSamplesCount;
+		OpenViBE::uint32 l_indexOffset = m_uiSamplesCount - l_loopRound * m_ui32MaxSamplesCount;
+		OpenViBE::uint32 l_baseIndex = l_loopRound * m_ui32MaxSamplesCount * EnobioData::NUMBER_OF_CHANNELS;
 		// Copy data to buffer
 		for (OpenViBE::uint32 i = 0; i < EnobioData::NUMBER_OF_CHANNELS; ++i)
 		{
@@ -299,10 +302,9 @@ void CDriverEnobioApiDll::CDriverEnobioApiDllPrivate::receiveData(const EnobioDa
 			{
 				l_f32Previous = m_aSamplesBuffer[m_uiSamplesCount - 1 + i * m_ui32MaxSamplesCount];
 			}
-			m_aSamplesBuffer[m_uiSamplesCount  + i * m_ui32MaxSamplesCount] = (OpenViBE::float32(l_i32Value) + l_f32Previous) / 2;
-			m_aSamplesBuffer[m_uiSamplesCount + 1 + i * m_ui32MaxSamplesCount] = OpenViBE::float32(l_i32Value);
+			m_aSamplesBuffer[l_baseIndex + l_indexOffset  + i * m_ui32MaxSamplesCount] = OpenViBE::float32(l_i32Value);
 		}
-		m_uiSamplesCount += 2;
+		m_uiSamplesCount += 1;
 	}
 	else
 	{
