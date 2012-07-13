@@ -10,7 +10,7 @@ if not %errorlevel%==0 goto errorexit
 call copy_sources_for_publish.bat
 if not %errorlevel%==0 goto errorexit
 
-@echo off
+@echo on
 REM you need VS 2010 to run this script
 set VSVARSALL="%VS100COMNTOOLS%vsvars32.bat"
 if not exist %VSVARSALL% exit /b 255
