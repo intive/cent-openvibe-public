@@ -14,7 +14,7 @@ using namespace OpenViBE::Kernel;
 //___________________________________________________________________//
 //                                                                   //
 
-CDriverGenericOscillator::CDriverGenericOscillator(IDriverContext& rDriverContext)
+CDriverGenericOscillator::CDriverGenericOscillator(IDriverContext& rDriverContext, Channels channels)
 	:IDriver(rDriverContext)
 	,m_pCallback(NULL)
 	,m_ui32SampleCountPerSentBlock(0)
@@ -22,10 +22,24 @@ CDriverGenericOscillator::CDriverGenericOscillator(IDriverContext& rDriverContex
 	,m_ui32TotalSampleCount(0)
 	,m_ui32StartTime(0)
 {
+	int chNum = 0;
+	switch(channels)
+	{
+	case channels_8:
+		chNum = 8;
+		break;
+	case channels_20:
+		chNum = 20;
+		break;
+	case channels_4:
+	default:
+		chNum = 4;
+	}
+
 	m_rDriverContext.getLogManager() << LogLevel_Trace << "CDriverGenericOscillator::CDriverGenericOscillator\n";
 
 	m_oHeader.setSamplingFrequency(250);
-	m_oHeader.setChannelCount(4);
+	m_oHeader.setChannelCount(chNum);
 }
 
 void CDriverGenericOscillator::release(void)

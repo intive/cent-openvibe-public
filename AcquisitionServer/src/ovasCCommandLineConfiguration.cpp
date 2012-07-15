@@ -20,6 +20,8 @@ namespace
 	const std::string enableTraceParameter        = "--trace";
 	const std::string useEnobioApiDriverParameter = "--use-enobio-api-driver";
 	const std::string useOscilatorParameter       = "--use-oscilator-as-source";
+	const std::string useOscilatorParameter_8     = "--use-oscilator-as-source-8";
+	const std::string useOscilatorParameter_20    = "--use-oscilator-as-source-20";
 
 	const std::string valueParameter              = "-";
 	const std::string listenPortParameter         = "-port";
@@ -39,6 +41,7 @@ CommandLineConfiguration::CommandLineConfiguration()
 	, m_enobioPort(defaultEnobioPort)
 	, m_useEnobioApiDriver(false)
 	, m_useOscilator(false)
+	, m_channelCount(4) // default oscilator channel count
 {
 }
 
@@ -128,6 +131,11 @@ bool CommandLineConfiguration::isOscilatorEnabled()
 	return m_useOscilator;
 }
 
+int CommandLineConfiguration::getChannelCount()
+{
+	return m_channelCount;
+}
+
 void CommandLineConfiguration::handleFlagParameter(CommandLineConfiguration& config, std::string flag)
 {
 	if (startsWith(flag, enableTraceParameter))
@@ -139,6 +147,20 @@ void CommandLineConfiguration::handleFlagParameter(CommandLineConfiguration& con
 	if (startsWith(flag, useEnobioApiDriverParameter))
 	{
 		config.m_useEnobioApiDriver = true;
+		return;
+	}
+
+	if (startsWith(flag, useOscilatorParameter_8))
+	{
+		config.m_useOscilator = true;
+		config.m_channelCount = 8;
+		return;
+	}
+
+	if (startsWith(flag, useOscilatorParameter_20))
+	{
+		config.m_useOscilator = true;
+		config.m_channelCount = 20;
 		return;
 	}
 

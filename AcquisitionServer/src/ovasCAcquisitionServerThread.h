@@ -126,7 +126,21 @@ namespace OpenViBEAcquisitionServer
 			}
 			else if(configuration.isOscilatorEnabled())
 			{
-				m_driver = new CDriverGenericOscillator(m_rAcquisitionServer.getDriverContext());
+				CDriverGenericOscillator::Channels ch;
+				switch(configuration.getChannelCount())
+				{
+				case 8:
+					ch = CDriverGenericOscillator::channels_8;
+					break;
+				case 20:
+					ch = CDriverGenericOscillator::channels_20;
+					break;
+				case 4:
+				default:
+					ch = CDriverGenericOscillator::channels_4;
+					break;
+				}
+				m_driver = new CDriverGenericOscillator(m_rAcquisitionServer.getDriverContext(), ch);
 			}
 			else
 			{

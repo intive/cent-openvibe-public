@@ -9,8 +9,13 @@ namespace OpenViBEAcquisitionServer
 	class CDriverGenericOscillator : public OpenViBEAcquisitionServer::IDriver
 	{
 	public:
-
-		CDriverGenericOscillator(OpenViBEAcquisitionServer::IDriverContext& rDriverContext);
+		enum Channels
+		{
+			channels_4,
+			channels_8,
+			channels_20
+		};
+		CDriverGenericOscillator(OpenViBEAcquisitionServer::IDriverContext& rDriverContext, Channels channels);
 		virtual void release(void);
 		virtual const char* getName(void);
 

@@ -16,6 +16,7 @@ namespace OpenViBEAcquisitionServer
 			std::string getEnobioHost();
 			bool isEnobioApiDriverEnabled();
 			bool isOscilatorEnabled();
+			int getChannelCount();
 
 			~CommandLineConfiguration();
 
@@ -31,6 +32,7 @@ namespace OpenViBEAcquisitionServer
 			std::string m_enobioHost;
 			bool        m_useEnobioApiDriver;
 			bool        m_useOscilator;
+			int         m_channelCount;
 	};
 };
 #endif
