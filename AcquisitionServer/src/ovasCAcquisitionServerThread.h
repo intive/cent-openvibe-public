@@ -8,11 +8,16 @@
 #include "generic-oscilator/ovasCDriverGenericOscilator.h"
 #include "enobio-api-dll-driver/ovasCDriverEnobioApiDll.h"
 #include "enobio-udp-driver/ovasCDriverEnobioUDP.h"
+#include "enobio-3g-api-dll-driver/ovasCDriverEnobio3GApiDll.h"
 
 #include "ovasCCommandLineConfiguration.h"
 
 #include <system/Time.h>
 #include <string>
+
+#ifdef TARGET_OS_Windows
+ #include <windows.h>
+#endif
 
 #define DEFAULT_SAMPLES_PER_CHANNEL 32
 
@@ -119,12 +124,27 @@ namespace OpenViBEAcquisitionServer
 
 			m_rKernelContext.getLogManager() << OpenViBE::Kernel::LogLevel_Trace << "CAcquisitionServerThread::connect()\n";
 
+#ifdef TARGET_OS_Windows
 			// If API based driver is enable, let's use it, otherwise use old implementation
 			if (configuration.isEnobioApiDriverEnabled())
 			{
-				m_driver = new CDriverEnobioApiDll(m_rAcquisitionServer.getDriverContext(), configuration);
+				HMODULE hMod = LoadLibrary("EnobioApi.dll");
+				if(hMod)
+				{
+					m_driver = new CDriverEnobioApiDll(m_rAcquisitionServer.getDriverContext(), configuration);
+				}
 			}
-			else if(configuration.isOscilatorEnabled())
+			else if (configuration.isEnobio3GApiDriverEnabled())
+			{
+				HMODULE hMod = LoadLibrary("Enobio3GApi.dll");
+				if(hMod)
+				{
+					m_driver = new CDriverEnobio3GApiDll(m_rAcquisitionServer.getDriverContext(), configuration);
+				}
+			}
+			else
+#endif
+			if(configuration.isOscilatorEnabled())
 			{
 				CDriverGenericOscillator::Channels ch;
 				switch(configuration.getChannelCount())
@@ -142,7 +162,8 @@ namespace OpenViBEAcquisitionServer
 				}
 				m_driver = new CDriverGenericOscillator(m_rAcquisitionServer.getDriverContext(), ch);
 			}
-			else
+			//fallback
+			if(! m_driver)
 			{
 				m_driver = new CDriverEnobioUDP(m_rAcquisitionServer.getDriverContext(), configuration);
 			}

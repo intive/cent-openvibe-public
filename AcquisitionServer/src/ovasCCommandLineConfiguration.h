@@ -13,8 +13,10 @@ namespace OpenViBEAcquisitionServer
 			bool isTraceEnabled();
 			int getListenPort();
 			int getEnobioPort();
+			std::string getEnobioMacAddress();
 			std::string getEnobioHost();
 			bool isEnobioApiDriverEnabled();
+			bool isEnobio3GApiDriverEnabled();
 			bool isOscilatorEnabled();
 			int getChannelCount();
 
@@ -30,7 +32,9 @@ namespace OpenViBEAcquisitionServer
 			int         m_listenPort;
 			int         m_enobioPort;
 			std::string m_enobioHost;
+			std::string m_macAddress;
 			bool        m_useEnobioApiDriver;
+			bool        m_useEnobio3GApiDriver;
 			bool        m_useOscilator;
 			int         m_channelCount;
 	};

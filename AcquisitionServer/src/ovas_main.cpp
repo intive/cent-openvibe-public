@@ -112,6 +112,6 @@ int main(int argc, char ** argv)
 	}
 	l_oKernelLoader.uninitialize();
 	l_oKernelLoader.unload();
-	
+
 	return 0;
 }

@@ -16,17 +16,19 @@ namespace
 		 return t;
 	}
 
-	const std::string flagParameter               = "--";
-	const std::string enableTraceParameter        = "--trace";
-	const std::string useEnobioApiDriverParameter = "--use-enobio-api-driver";
-	const std::string useOscilatorParameter       = "--use-oscilator-as-source";
-	const std::string useOscilatorParameter_8     = "--use-oscilator-as-source-8";
-	const std::string useOscilatorParameter_20    = "--use-oscilator-as-source-20";
+	const std::string flagParameter                 = "--";
+	const std::string enableTraceParameter          = "--trace";
+	const std::string useEnobioApiDriverParameter   = "--use-enobio-api-driver";
+	const std::string useEnobio3GApiDriverParameter = "--use-enobio-3g-api-driver";
+	const std::string useOscilatorParameter         = "--use-oscilator-as-source";
+	const std::string useOscilatorParameter_8       = "--use-oscilator-as-source-8";
+	const std::string useOscilatorParameter_20      = "--use-oscilator-as-source-20";
 
 	const std::string valueParameter              = "-";
 	const std::string listenPortParameter         = "-port";
 	const std::string enobioHostParameter         = "-enobio-host";
 	const std::string enobioPortParameter         = "-enobio-port";
+	const std::string enobio3GMacAddress          = "-enobio-3g-mac";
 	const std::string helpParameter               = "-h";
 
 	const int defaultListenPort         = 1024;
@@ -40,6 +42,7 @@ CommandLineConfiguration::CommandLineConfiguration()
 	, m_enobioHost(defaultEnobioHost)
 	, m_enobioPort(defaultEnobioPort)
 	, m_useEnobioApiDriver(false)
+	, m_useEnobio3GApiDriver(false)
 	, m_useOscilator(false)
 	, m_channelCount(4) // default oscilator channel count
 {
@@ -116,6 +119,11 @@ int CommandLineConfiguration::getEnobioPort()
 	return m_enobioPort;
 }
 
+std::string CommandLineConfiguration::getEnobioMacAddress()
+{
+	return m_macAddress;
+}
+
 std::string CommandLineConfiguration::getEnobioHost()
 {
 	return m_enobioHost;
@@ -124,6 +132,11 @@ std::string CommandLineConfiguration::getEnobioHost()
 bool CommandLineConfiguration::isEnobioApiDriverEnabled()
 {
 	return m_useEnobioApiDriver;
+}
+
+bool CommandLineConfiguration::isEnobio3GApiDriverEnabled()
+{
+	return m_useEnobio3GApiDriver;
 }
 
 bool CommandLineConfiguration::isOscilatorEnabled()
@@ -148,6 +161,11 @@ void CommandLineConfiguration::handleFlagParameter(CommandLineConfiguration& con
 	{
 		config.m_useEnobioApiDriver = true;
 		return;
+	}
+
+	if (startsWith(flag, useEnobio3GApiDriverParameter))
+	{
+		config.m_useEnobio3GApiDriver = true;
 	}
 
 	if (startsWith(flag, useOscilatorParameter_8))
@@ -187,6 +205,11 @@ void CommandLineConfiguration::handleValueParameter(CommandLineConfiguration& co
 	if (startsWith(parameter, enobioHostParameter))
 	{
 		config.m_enobioHost = value;
+		return;
+	}
+	if(startsWith(parameter, enobio3GMacAddress))
+	{
+		config.m_macAddress = value;
 		return;
 	}
 }

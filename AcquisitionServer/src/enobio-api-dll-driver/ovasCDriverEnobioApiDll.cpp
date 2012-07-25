@@ -6,7 +6,7 @@
 #include <system/Time.h>
 #include <boost/thread.hpp>
 
-#include "Enobio.h"
+#include "enobio/includes/Enobio.h"
 
 using namespace OpenViBEAcquisitionServer;
 
@@ -42,6 +42,11 @@ namespace
 
 	// Data used to store information about received sample
 	typedef std::vector<OpenViBE::float32> SamplesBuffer;
+
+	const char* STR_ENABLE_CHANNEL_1 = "Channel 1 Enabled";
+	const char* STR_ENABLE_CHANNEL_2 = "Channel 2 Enabled";
+	const char* STR_ENABLE_CHANNEL_3 = "Channel 3 Enabled";
+	const char* STR_ENABLE_CHANNEL_4 = "Channel 4 Enabled";
 }
 
 class CDriverEnobioApiDll::CDriverEnobioApiDllPrivate
@@ -237,10 +242,10 @@ CDriverEnobioApiDll::CDriverEnobioApiDllPrivate::CDriverEnobioApiDllPrivate(Open
 	, m_ui32TimeMark(0)
 {
 	// Configure channels for driver
-	m_oEnobio.setProperty(Property(Enobio::STR_PROPERTY_ENABLE_CHANNEL_1, EnobioData::NUMBER_OF_CHANNELS > 0));
-	m_oEnobio.setProperty(Property(Enobio::STR_PROPERTY_ENABLE_CHANNEL_2, EnobioData::NUMBER_OF_CHANNELS > 1));
-	m_oEnobio.setProperty(Property(Enobio::STR_PROPERTY_ENABLE_CHANNEL_3, EnobioData::NUMBER_OF_CHANNELS > 2));
-	m_oEnobio.setProperty(Property(Enobio::STR_PROPERTY_ENABLE_CHANNEL_4, EnobioData::NUMBER_OF_CHANNELS > 3));
+	m_oEnobio.setProperty(Property(STR_ENABLE_CHANNEL_1, EnobioData::NUMBER_OF_CHANNELS > 0));
+	m_oEnobio.setProperty(Property(STR_ENABLE_CHANNEL_2, EnobioData::NUMBER_OF_CHANNELS > 1));
+	m_oEnobio.setProperty(Property(STR_ENABLE_CHANNEL_3, EnobioData::NUMBER_OF_CHANNELS > 2));
+	m_oEnobio.setProperty(Property(STR_ENABLE_CHANNEL_4, EnobioData::NUMBER_OF_CHANNELS > 3));
 
 	m_oEnobio.registerConsumer(Enobio::ENOBIO_DATA, m_oDataConsumer);
 	m_oEnobio.registerConsumer(Enobio::STATUS,      m_oStatusConsumer);
@@ -251,7 +256,7 @@ CDriverEnobioApiDll::CDriverEnobioApiDllPrivate::~CDriverEnobioApiDllPrivate()
 	m_oEnobio.closeDevice();
 
 	m_oEnobio.deregisterConsumer(Enobio::ENOBIO_DATA, m_oDataConsumer);
-	m_oEnobio.registerConsumer(Enobio::STATUS,        m_oStatusConsumer);
+	m_oEnobio.deregisterConsumer(Enobio::STATUS,        m_oStatusConsumer);
 }
 
 OpenViBE::boolean CDriverEnobioApiDll::CDriverEnobioApiDllPrivate::open()

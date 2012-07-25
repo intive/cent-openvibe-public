@@ -23,9 +23,19 @@ INCLUDE("FindThirdPartyThinkGearAPI")
 INCLUDE("FindThirdPartyEmotivAPI")
 INCLUDE("FindThirdPartyOpenAL")
 
-INCLUDE_DIRECTORIES(enobio/includes)
-TARGET_LINK_LIBRARIES(${PROJECT_NAME}-dynamic ${CMAKE_CURRENT_SOURCE_DIR}/enobio/libs/EnobioAPI.lib)
+INCLUDE_DIRECTORIES(.)
 
+IF(WIN32)
+	# Enobio 4 channel cap api
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME}-dynamic ${CMAKE_CURRENT_SOURCE_DIR}/enobio/libs/EnobioAPI.lib)
+
+	# Enobio 8/20 channel cap api
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME}-dynamic ${CMAKE_CURRENT_SOURCE_DIR}/enobio3g/libs/Enobio3GAPI.lib)
+	
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME}-dynamic delayimp.lib)
+	SET_TARGET_PROPERTIES(${PROJECT_NAME}-dynamic PROPERTIES LINK_FLAGS "/DELAYLOAD:Enobio3GAPI.dll /DELAYLOAD:EnobioAPI.dll")
+	
+ENDIF(WIN32)
 # ---------------------------------
 # Target macros
 # Defines target operating system
