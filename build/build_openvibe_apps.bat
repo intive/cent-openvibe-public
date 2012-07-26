@@ -52,6 +52,10 @@ if not %errorlevel%==0 goto errorexit
 REM this you need to get from StarLab yourself, BLStream does not redistribute it.
 copy /Y EnobioAPI\lib\VC2010\EnobioAPI.dll output\EnobioAPI.dll
 if not %errorlevel%==0 goto errorexit
+copy /Y Enobio3GAPI\libs\VC2010\Enobio3GAPI.dll output\Enobio3GAPI.dll
+if not %errorlevel%==0 goto errorexit
+copy /Y Enobio3GAPI\libs\VC2010\WinBluetoothAPI.dll output\WinBluetoothAPI.dll
+if not %errorlevel%==0 goto errorexit
 
 popd
 pushd build\
